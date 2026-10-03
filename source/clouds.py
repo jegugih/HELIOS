@@ -106,9 +106,12 @@ class Cloud(object):
 
         for l in range(len(self.lamda_mie)):
 
-            abs_cross = sum(abs_cross_per_r[:, l] * pdf * delta_r)
-            scat_cross = sum(scat_cross_per_r[:, l] * pdf * delta_r)
-            g_0 = sum(scat_cross_per_r[:, l] * pdf * delta_r)
+            abs_cross = sum(abs(abs_cross_per_r[:, l]) * pdf * delta_r)
+            scat_cross = sum(abs(scat_cross_per_r[:, l]) * pdf * delta_r)
+            if scat_cross > 0:
+                g_0 = sum(g_0_per_r[:, l] * scat_cross_per_r[:, l] * pdf * delta_r) / scat_cross
+            else:
+                g_0 = 0
 
             weighted_abs_cross_mie.append(abs_cross)
             weighted_scat_cross_mie.append(scat_cross)
