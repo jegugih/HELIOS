@@ -26,7 +26,7 @@ def read_ascii_file(star):
     flux = []
 
     with open(star["source_file"], 'r') as file:
-
+	
         next(file)
         next(file)
         next(file)
@@ -45,8 +45,9 @@ def read_ascii_file(star):
 
     lamda = [l * star["w_conversion_factor"] for l in lamda]
     flux = [f * star["flux_conversion_factor"] * (pc.AU / pc.R_SUN)**2 for f in flux]
-
+    
     return lamda, flux
+
 
 def read_muscles_file(star):
     """ reads in a stellar_tool spectrum from a MUSCLES fits file """
@@ -76,6 +77,28 @@ def read_btsettl_file(star):
     flux = [f * star["flux_conversion_factor"] for f in flux]
 
 
+
+    return lamda, flux
+
+def read_sphinx_file(star):
+    """ reads in an interpolated SPHINX text file (wav, surface flux, '#' header) """
+
+    lamda = []
+    flux = []
+
+    with open(star["source_file"], 'r') as file:
+
+        for line in file:
+            if line[0]=='#':
+                continue
+
+            column = line.split()
+
+            lamda.append(float(column[0]))
+            flux.append(float(column[1]))
+
+    lamda = [l * star["w_conversion_factor"] for l in lamda]
+    flux = [f * star["flux_conversion_factor"] for f in flux]
 
     return lamda, flux
 
@@ -289,7 +312,7 @@ def gen_int_lambda_values(lamda):
     return int_lambda
 
 
-def main_loop(star, convert_to, opac_file_for_lambdagrid, output_file, plot_and_tweak='no', save_ascii='no', save_in_hdf5='no', BB_temp=None):
+def main_loop(star, convert_to, opac_file_for_lambdagrid, output_file, plot_and_tweak='no', save_ascii='no', save_in_hdf5='no', disable_plot='yes', BB_temp=None, ignore_check=False):
 
     with h5py.File(opac_file_for_lambdagrid, "r") as file:
 
@@ -335,7 +358,7 @@ def main_loop(star, convert_to, opac_file_for_lambdagrid, output_file, plot_and_
         elif star["data_format"] == "ascii":
 
             orig_lambda, orig_flux = read_ascii_file(star)
-
+	
         elif star["data_format"] == "muscles":
 
             orig_lambda, orig_flux = read_muscles_file(star)
@@ -343,6 +366,10 @@ def main_loop(star, convert_to, opac_file_for_lambdagrid, output_file, plot_and_
         elif star["data_format"] == "btsettl":
 
             orig_lambda, orig_flux = read_btsettl_file(star)
+
+        elif star["data_format"] in ("sphinx", "ascii_normal"):
+
+            orig_lambda, orig_flux = read_sphinx_file(star)
 
         else:
             raise IOError
@@ -424,41 +451,46 @@ def main_loop(star, convert_to, opac_file_for_lambdagrid, output_file, plot_and_
                         tryout_BB.append(np.pi * tls.calc_analyt_planck_in_interval(BB_temp, int_lambda[i], int_lambda[i + 1]))
 
                     print("\nCalculation of BB extrapolation done!")
+                    if not disable_plot=='yes':
 
-                    fig, ax = plt.subplots()
+                        fig, ax = plt.subplots()
 
-                    orig_lambda_plot = [p * 1e4 for p in orig_lambda]
-                    new_lambda_plot = [n * 1e4 for n in new_lambda]
+                        orig_lambda_plot = [p * 1e4 for p in orig_lambda]
+                        new_lambda_plot = [n * 1e4 for n in new_lambda]
 
-                    ax.plot(orig_lambda_plot, orig_flux, color='darkorange', linewidth=1.5, alpha=0.5, label='original')
-                    ax.plot(new_lambda_plot, converted_flux, color='blue', linewidth=1.0, alpha=0.7, label='converted')
-                    ax.scatter(new_lambda_plot, converted_flux, color='green', s=10, alpha=0.9)
-                    ax.plot(new_lambda_plot, tryout_BB, color='red', linewidth=1, alpha=0.7, label='new BB extrapol.')
+                        ax.plot(orig_lambda_plot, orig_flux, color='darkorange', linewidth=1.5, alpha=0.5, label='original')
+                        ax.plot(new_lambda_plot, converted_flux, color='blue', linewidth=1.0, alpha=0.7, label='converted')
+                        ax.scatter(new_lambda_plot, converted_flux, color='green', s=10, alpha=0.9)
+                        ax.plot(new_lambda_plot, tryout_BB, color='red', linewidth=1, alpha=0.7, label='new BB extrapol.')
 
-                    ax.set(xscale='log', yscale='log', xlim=[0.2, 30], xlabel='wavelength ($\mu$m)', ylabel='flux (erg s$^{-1}$ cm$^{-3}$)')
+                        ax.set(xscale='log', yscale='log', xlim=[0.2, 30], xlabel='wavelength ($\mu$m)', ylabel='flux (erg s$^{-1}$ cm$^{-3}$)')
 
-                    leg = ax.legend(loc='best', frameon=True, labelspacing=0.1, framealpha=0.8, fancybox=True, handlelength=1.5, handletextpad=0.2)
-                    for line in leg.legendHandles:
-                        line.set_linewidth(4)
+                        leg = ax.legend(loc='best', frameon=True, labelspacing=0.1, framealpha=0.8, fancybox=True, handlelength=1.5, handletextpad=0.2)
+                        for line in leg.legendHandles:
+                            line.set_linewidth(4)
 
-                    plt.show()
+                        plt.show()
 
                     reply = None
+                    if ignore_check:
+                        assert BB_temp > 0 #minimum check
+                        reply = "yes"
+                    else:
+                        while reply not in ["yes", "no"]:
 
-                    while reply not in ["yes", "no"]:
+                            reply = input("\nDo you accept the new blackbody extrapolation? (BB temperature: {:.3f} K): (yes/no)\n\tEnter here:".format(BB_temp))
 
-                        reply = input("\nDo you accept the new blackbody extrapolation? (BB temperature: {:.3f} K): (yes/no)\n\tEnter here:".format(BB_temp))
+                            if reply == "no":
 
-                        if reply == "no":
+                                BB_temp = input("\n  I am sorry to read that. Please choose a new blackbody temperature and we try again: \n\tEnter here:")
+                                plot_and_tweak = 'yes' # continuing manually from here, as automatic is not satisfactory
 
-                            BB_temp = input("\n  I am sorry to read that. Please choose a new blackbody temperature and we try again: \n\tEnter here:")
-                            plot_and_tweak = 'yes' # continuing manually from here, as automatic is not satisfactory
+                                try:
+                                    BB_temp = float(BB_temp)
+                                except ValueError:
+                                    print("Invalid choice for the blackbody temperature. Let's try again.")
+                                    reply = None
 
-                            try:
-                                BB_temp = float(BB_temp)
-                            except ValueError:
-                                print("Invalid choice for the blackbody temperature. Let's try again.")
-                                reply = None
 
         if save_ascii == 'yes':
 
