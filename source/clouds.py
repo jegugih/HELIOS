@@ -67,6 +67,14 @@ class Cloud(object):
                 abs_cross_mie.append(float(column[4]))
                 g_0_mie.append(float(column[6]))
 
+        for i, value in enumerate(abs_cross_mie):
+            if value < 0:
+                raise ValueError(f"Q_abs < 0 in {mie_file} at index {i}, wavelength {lamda_mie[i]}")
+
+        for i, value in enumerate(scat_cross_mie):
+            if value < 0:
+                raise ValueError(f"Q_sca < 0 in {mie_file} at index {i}, wavelength {lamda_mie[i]}")
+
         return lamda_mie, scat_cross_mie, abs_cross_mie, g_0_mie
 
     @staticmethod
@@ -106,8 +114,8 @@ class Cloud(object):
 
         for l in range(len(self.lamda_mie)):
 
-            abs_cross = sum(abs(abs_cross_per_r[:, l]) * pdf * delta_r)
-            scat_cross = sum(abs(scat_cross_per_r[:, l]) * pdf * delta_r)
+            abs_cross = sum(abs_cross_per_r[:, l] * pdf * delta_r)
+            scat_cross = sum(scat_cross_per_r[:, l] * pdf * delta_r)
             if scat_cross > 0:
                 g_0 = sum(g_0_per_r[:, l] * scat_cross_per_r[:, l] * pdf * delta_r) / scat_cross
             else:
