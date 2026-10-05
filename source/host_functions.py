@@ -466,7 +466,8 @@ def conv_correct(quant, fudging):
 
         for i in range(start_index, stop_index + 1):
 
-            num += quant.c_p_lay[i] / quant.meanmolmass_lay[i] * quant.T_lay[i] * (quant.p_int[i] - quant.p_int[i+1])
+            # layers are weighted by their column mass delta_p / g, which matters when g varies with altitude
+            num += quant.c_p_lay[i] / quant.meanmolmass_lay[i] * quant.T_lay[i] * quant.delta_colmass[i]
 
             denom_element = 1
 
@@ -476,7 +477,7 @@ def conv_correct(quant, fudging):
 
                     denom_element *= (quant.p_lay[j]/quant.p_int[j])**quant.kappa_int[j] * (quant.p_int[j+1]/quant.p_lay[j])**quant.kappa_lay[j]
 
-            denom_element *= (quant.p_lay[i]/quant.p_int[i])**quant.kappa_int[i] * quant.c_p_lay[i] / quant.meanmolmass_lay[i] * (quant.p_int[i] - quant.p_int[i+1])
+            denom_element *= (quant.p_lay[i]/quant.p_int[i])**quant.kappa_int[i] * quant.c_p_lay[i] / quant.meanmolmass_lay[i] * quant.delta_colmass[i]
 
             denom += denom_element
 

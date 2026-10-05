@@ -798,7 +798,7 @@ class Compute(object):
                     quant.iter_value,
                     quant.f_factor,
                     quant.foreplay,
-                    quant.g,
+                    quant.dev_delta_colmass,
                     quant.nlayer,
                     quant.physical_tstep,
                     quant.rad_convergence_limit,

@@ -2624,7 +2624,7 @@ __global__ void rad_temp_iter(
         int 	itervalue, 
         utype 	f_factor, 
         int 	foreplay,
-        utype 	g,
+        utype* 	delta_colmass,
         int 	numlayers, 
         utype 	physical_tstep, 
         utype 	local_limit, 
@@ -2726,11 +2726,12 @@ __global__ void rad_temp_iter(
         // advancing the temperature using a constant physical timestep
         else{
             delta_t = physical_tstep;
+            // heating rate per unit column mass (delta_colmass = delta p / g, with g possibly varying with altitude)
             if(i < numlayers){
-                delta_T = g / (c_p_lay[i] / (meanmolmass_lay[i]/AMU)) * combined_F_net_diff / (pint[i] - pint[i+1]) * delta_t;
+                delta_T = combined_F_net_diff / (c_p_lay[i] / (meanmolmass_lay[i]/AMU) * delta_colmass[i]) * delta_t;
             }
             else{ // i = numlayers, i.e., surface/BOA "ghost layer" case. Taking parameters of the bottommost atmospheric layer for simplicity. WARNING: This is obviously wrong when modeling a solid surface.
-                delta_T = g / (c_p_lay[0] / (meanmolmass_lay[0]/AMU)) * combined_F_net_diff / (pint[0] - pint[1]) * delta_t;
+                delta_T = combined_F_net_diff / (c_p_lay[0] / (meanmolmass_lay[0]/AMU) * delta_colmass[0]) * delta_t;
             }
         }
         
