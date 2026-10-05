@@ -114,6 +114,9 @@ species_lib["Cu"] = Species_db(name="Cu", fc_name="Cu", weight=63.546)
 species_lib["Fe"] = Species_db(name="Fe", fc_name="Fe", weight=55.845)
 species_lib["Zn"] = Species_db(name="Zn", fc_name="Zn", weight=65.38)
 
+# pseudo-species (for CIA with air as collision partner; not in FastChem, so its vmr has to be provided via file)
+species_lib["air"] = Species_db(name="air", fc_name="air", weight=28.9647)
+
 # ions
 species_lib["H-_bf"] = Species_db(name="H-_bf", fc_name="H1-", weight=species_lib["H"].weight)
 species_lib["H-_ff"] = Species_db(name="H-_ff", fc_name="H&e-", weight=species_lib["H"].weight)
@@ -135,7 +138,22 @@ species_lib["CIA_O2O2"] = Species_db(name="CIA_O2O2", fc_name="O2&O2", weight=sp
 species_lib["CIA_O2N2"] = Species_db(name="CIA_O2N2", fc_name="O2&N2", weight=species_lib["N2"].weight)
 species_lib["CIA_N2N2"] = Species_db(name="CIA_N2N2", fc_name="N2&N2", weight=species_lib["N2"].weight)
 species_lib["CIA_N2H2"] = Species_db(name="CIA_N2H2", fc_name="N2&H2", weight=species_lib["H2"].weight)
-
+species_lib["CIA_N2CH4"] = Species_db(name="CIA_N2CH4", fc_name="N2&C1H4", weight=species_lib["CH4"].weight)
+species_lib["CIA_CO2CH4"] = Species_db(name="CIA_CO2CH4", fc_name="C1O2&C1H4", weight=species_lib["CH4"].weight)
+species_lib["CIA_CH4He"] = Species_db(name="CIA_CH4He", fc_name="C1H4&He", weight=species_lib["He"].weight)
+species_lib["CIA_CO2Ar"] = Species_db(name="CIA_CO2Ar", fc_name="C1O2&Ar", weight=species_lib["Ar"].weight)
+species_lib["CIA_CO2H2O"] = Species_db(name="CIA_CO2H2O", fc_name="C1O2&H2O1", weight=species_lib["H2O"].weight)
+species_lib["CIA_CO2H2"] = Species_db(name="CIA_CO2H2", fc_name="C1O2&H2", weight=species_lib["H2"].weight)
+species_lib["CIA_CO2He"] = Species_db(name="CIA_CO2He", fc_name="C1O2&He", weight=species_lib["He"].weight)
+species_lib["CIA_H2CH4_eq"] = Species_db(name="CIA_H2CH4_eq", fc_name="H2&C1H4", weight=species_lib["CH4"].weight)
+species_lib["CIA_H2CH4_norm"] = Species_db(name="CIA_H2CH4_norm", fc_name="H2&C1H4", weight=species_lib["CH4"].weight)
+species_lib["CIA_H2H"] = Species_db(name="CIA_H2H", fc_name="H2&H", weight=species_lib["H"].weight)
+species_lib["CIA_HeH"] = Species_db(name="CIA_HeH", fc_name="He&H", weight=species_lib["H"].weight)
+species_lib["CIA_N2Ar"] = Species_db(name="CIA_N2Ar", fc_name="N2&Ar", weight=species_lib["Ar"].weight)
+species_lib["CIA_N2H2O"] = Species_db(name="CIA_N2H2O", fc_name="N2&H2O1", weight=species_lib["H2O"].weight)
+species_lib["CIA_N2He"] = Species_db(name="CIA_N2He", fc_name="N2&He", weight=species_lib["He"].weight)
+species_lib["CIA_N2air"] = Species_db(name="CIA_N2air", fc_name="N2&air", weight=species_lib["air"].weight)
+species_lib["CIA_O2air"] = Species_db(name="CIA_O2air", fc_name="O2&air", weight=species_lib["air"].weight)
 
 if __name__ == "__main__":
     print("This module stores information about all kinds of atmospheric species. "

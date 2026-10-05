@@ -234,6 +234,7 @@ class Read(object):
         # iteration
         parser.add_argument('-run_type', help='see documentation (https://heliosexo.readthedocs.io/en/latest/)', required=False)
         parser.add_argument('-path_to_temperature_file', help='see documentation (https://heliosexo.readthedocs.io/en/latest/)', required=False)
+        parser.add_argument('-temperature_file_format', help='see documentation (https://heliosexo.readthedocs.io/en/latest/)', required=False)
 
         # radiation
         parser.add_argument('-scattering', help='see documentation (https://heliosexo.readthedocs.io/en/latest/)', required=False)
@@ -681,7 +682,10 @@ class Read(object):
         if args.path_to_temperature_file:
             self.temp_path = args.path_to_temperature_file
 
-        # radiation
+        if args.temperature_file_format:
+            self.temp_format = args.temperature_file_format
+        
+	# radiation
         if args.scattering:
             quant.scat = self.__read_yes_no__(args.scattering)
 
@@ -1279,10 +1283,11 @@ class Read(object):
 
     @staticmethod
     def interpolate_to_own_press(old_press, old_array, new_press):
-
-        new_array = interpolate.interp1d(npy.log10(old_press), old_array, bounds_error=False,
-                                         fill_value=(old_array[-1], old_array[0]))(npy.log10(new_press))
-
+        if len(old_press) > 1:
+            new_array = interpolate.interp1d(npy.log10(old_press), old_array, bounds_error=False,
+                                             fill_value=(old_array[-1], old_array[0]))(npy.log10(new_press))
+        else: # if old array is just a value, interp1d will thrown an error-- this breaks no_atmosphere runs
+            new_array = npy.full_like(new_press, fill_value=old_array[0]) 
         return new_array
 
     def read_temperature_file(self, quant):

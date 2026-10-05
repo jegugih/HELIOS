@@ -1471,6 +1471,7 @@ __global__ void fband_iso(
                 // this is the surface/BOA emission. it correctly considers the emissivity e = (1 - albedo)
                 utype BOA_part = (1.0 - surf_albedo[x]) * PI * (1.0 - w0)/(E - w0) * planckband_lay[numinterfaces + x * (numinterfaces-1+2)]; // remember: numinterfaces = numlayers + 1
                 
+                //utype BOA_part =  PI * (1.0 - w0)/(E - w0) * planckband_lay[numinterfaces + x * (numinterfaces-1+2)]; // remember: numinterfaces = numlayers + 1
                 F_up_wg[y+ny*x+ny*nbin* i] = reflected_part + BOA_part; // internal_part consists of the internal heat flux plus the surface/BOA emission
             }
             else {
@@ -1703,6 +1704,7 @@ __global__ void fband_noniso(
                 // this is the surface/BOA emission. it correctly includes the emissivity e = (1 - albedo)
                 utype BOA_part = (1.0 - surf_albedo[x]) * PI * (1.0 - w0_low)/(E_low - w0_low) * planckband_lay[numinterfaces + x * (numinterfaces-1+2)];
                 
+                //utype BOA_part = PI * (1.0 - w0_low)/(E_low - w0_low) * planckband_lay[numinterfaces + x * (numinterfaces-1+2)];
                 F_up_wg[y+ny*x+ny*nbin* i] = reflected_part + BOA_part; // internal_part consists of the internal heat flux plus the surface/BOA emission
             }
             else {
@@ -1912,6 +1914,7 @@ __global__ void fband_matrix_iso(
             // reflected direct beam plus surface (or interior) emission
             source_term_BOA = surf_albedo[x] * F_dir_wg[y+ny*x+ny*nbin*0] + (1.0 - surf_albedo[x]) * PI * (1.0 - w0)/(E - w0) * planckband_lay[numinterfaces + x * (numinterfaces-1+2)];
             
+            //source_term_BOA = surf_albedo[x] * F_dir_wg[y+ny*x+ny*nbin*0] +  PI * (1.0 - w0)/(E - w0) * planckband_lay[numinterfaces + x * (numinterfaces-1+2)];
             // second loop for populating matrix coefficients for Thomas algorithm
             int n_matrix = 2 * numinterfaces;
             
