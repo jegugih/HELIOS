@@ -698,6 +698,64 @@ def calculate_height_z(quant):
             quant.z_lay[i] = quant.z_lay[i-1] + 0.5 * quant.delta_z_lay[i-1] + 0.5 * quant.delta_z_lay[i]
 
 
+def calculate_heights_and_colmass_variable_g(quant, T_lay, meanmolmass_lay):
+    """ calculates layer heights, altitudes and column masses with g(r) = g * (R_planet / r)^2.
+    quant.g is the gravity at R_planet, i.e., at the surface (rocky) or the 10 bar level (gas), as in calculate_height_z.
+    Each half layer is isothermal, for which hydrostatic equilibrium has the exact solution
+    1/r = 1/r_a - k_B T / (mu G M) * ln(p_a / p) """
+
+    nlayer = quant.nlayer
+    R = quant.R_planet
+    GM = quant.g * R ** 2
+
+    # pressure points from BOA to TOA: p_int[0], p_lay[0], p_int[1], ..., p_lay[nlayer-1], p_int[nlayer]
+    p_pts = np.empty(2 * nlayer + 1)
+    p_pts[0::2] = quant.p_int[:nlayer + 1]
+    p_pts[1::2] = quant.p_lay[:nlayer]
+
+    # segment j lies between p_pts[j] and p_pts[j+1] and belongs to layer j // 2
+    beta = np.repeat(pc.K_B * T_lay[:nlayer] / (meanmolmass_lay[:nlayer] * GM), 2)
+
+    if quant.planet_type == 'gas':
+        i_white_light_radius = max([i for i in range(nlayer) if quant.p_lay[i] >= 1e7])
+        j_ref = 2 * i_white_light_radius + 1
+    else:
+        j_ref = 0
+
+    # isothermal atmospheres with low enough TOA pressure are unbound (r -> infinity). cap r at 100 R_planet in that case
+    inv_r_floor = 1.0 / (100.0 * R)
+
+    inv_r = np.empty(2 * nlayer + 1)
+    inv_r[j_ref] = 1.0 / R
+
+    for j in range(j_ref, 2 * nlayer):
+        inv_r[j + 1] = inv_r[j] - beta[j] * np.log(p_pts[j] / p_pts[j + 1])
+
+        if inv_r[j + 1] < inv_r_floor:
+            inv_r[j + 1] = inv_r_floor
+            if not quant.unbound_warning_given:
+                print("\nWARNING: hydrostatic atmosphere with variable gravity is unbound above p = {:.2e} bar. "
+                      "Radius capped at 100 R_planet. Consider a higher TOA pressure.".format(p_pts[j] * 1e-6))
+                quant.unbound_warning_given = True
+
+    for j in range(j_ref - 1, -1, -1):
+        inv_r[j] = inv_r[j + 1] - beta[j] * np.log(p_pts[j + 1] / p_pts[j])
+
+    r = 1.0 / inv_r
+    r_int = r[0::2]
+    r_lay = r[1::2]
+
+    quant.delta_z_lay = np.array(r_int[1:] - r_int[:-1], quant.fl_prec)
+    quant.z_lay = np.array(r_lay - R, quant.fl_prec)
+
+    # column mass per segment: dm = dp / g(r) = dp * r^2 / GM, trapezoidal in p
+    delta_col_seg = (p_pts[:-1] - p_pts[1:]) * 0.5 * (r[:-1] ** 2 + r[1:] ** 2) / GM
+
+    quant.delta_col_lower = np.array(delta_col_seg[0::2], quant.fl_prec)
+    quant.delta_col_upper = np.array(delta_col_seg[1::2], quant.fl_prec)
+    quant.delta_colmass = np.array(delta_col_seg[0::2] + delta_col_seg[1::2], quant.fl_prec)
+
+
 def calc_add_heating_flux(quant):
     """ calculates the UV heating flux -- individual layers and added up to get the total additional atmospheric heating """
 

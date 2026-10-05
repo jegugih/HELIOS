@@ -304,6 +304,7 @@ class Read(object):
         parser.add_argument('-diffusivity_factor', help='see documentation (https://heliosexo.readthedocs.io/en/latest/)', required=False)
         parser.add_argument('-second_eddington_coefficient', help='see documentation (https://heliosexo.readthedocs.io/en/latest/)', required=False)
         parser.add_argument('-geometric_zenith_angle_correction', help='see documentation (https://heliosexo.readthedocs.io/en/latest/)', required=False)
+        parser.add_argument('-variable_gravity', help='yes: g decreases with altitude as 1/r^2 (affects column masses and layer heights). default: no', required=False)
         parser.add_argument('-flux_calculation_method', help='see documentation (https://heliosexo.readthedocs.io/en/latest/)', required=False)
         parser.add_argument('-k_coefficients_mixing_method', help='see documentation (https://heliosexo.readthedocs.io/en/latest/)', required=False)
         parser.add_argument('-energy_budget_correction', help='see documentation (https://heliosexo.readthedocs.io/en/latest/)', required=False)
@@ -574,6 +575,9 @@ class Read(object):
                     elif column[0] == "geometric" and column[1] == "zenith":
                         zenith_correction = column[5]
 
+                    elif column[0] == "variable" and column[1] == "gravity":
+                        quant.variable_g = self.__read_yes_no__(column[3])
+
                     elif column[0] == "flux" and column[2] == "method":
                         quant.flux_calc_method = column[4]
 
@@ -838,6 +842,9 @@ class Read(object):
 
         if args.geometric_zenith_angle_correction:
             zenith_correction = args.geometric_zenith_angle_correction
+
+        if args.variable_gravity:
+            quant.variable_g = self.__read_yes_no__(args.variable_gravity)
 
         if args.flux_calculation_method:
             quant.flux_calc_method = args.flux_calculation_method

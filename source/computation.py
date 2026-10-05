@@ -478,6 +478,24 @@ class Compute(object):
 
         cuda.Context.synchronize()
 
+    def update_vertical_structure(self, quant):
+        """ updates layer heights and altitudes. with variable gravity, also the column masses (and thus the optical depths) """
+
+        if quant.variable_g == 1:
+            T_lay = quant.dev_T_lay.get()
+            meanmolmass_lay = quant.dev_meanmolmass_lay.get()
+            hsfunc.calculate_heights_and_colmass_variable_g(quant, T_lay, meanmolmass_lay)
+            quant.dev_delta_colmass.set(quant.delta_colmass)
+            quant.dev_delta_col_upper.set(quant.delta_col_upper)
+            quant.dev_delta_col_lower.set(quant.delta_col_lower)
+            quant.dev_delta_z_lay.set(quant.delta_z_lay)
+        else:
+            self.calculate_delta_z(quant)
+            quant.delta_z_lay = quant.dev_delta_z_lay.get()
+            hsfunc.calculate_height_z(quant)
+
+        quant.dev_z_lay = gpuarray.to_gpu(quant.z_lay)
+
     def calculate_direct_beamflux(self, quant):
         """ calculates the direct stellar flux at each interface """
 
@@ -870,12 +888,8 @@ class Compute(object):
 
                 if quant.clouds == 1:
                     self.calc_total_g_0_of_gas_and_clouds(quant)
+                self.update_vertical_structure(quant)  # before transmission, which uses the column masses
                 self.calculate_transmission(quant)
-
-                self.calculate_delta_z(quant)
-                quant.delta_z_lay = quant.dev_delta_z_lay.get()
-                hsfunc.calculate_height_z(quant)
-                quant.dev_z_lay = gpuarray.to_gpu(quant.z_lay)
                 self.calculate_direct_beamflux(quant)
             if quant.flux_calc_method == "iteration":
                 self.populate_spectral_flux_iteratively(quant)
@@ -1077,11 +1091,8 @@ class Compute(object):
 
                     if quant.clouds == 1:
                         self.calc_total_g_0_of_gas_and_clouds(quant)
+                    self.update_vertical_structure(quant)  # before transmission, which uses the column masses
                     self.calculate_transmission(quant)
-                    self.calculate_delta_z(quant)
-                    quant.delta_z_lay = quant.dev_delta_z_lay.get()
-                    hsfunc.calculate_height_z(quant)
-                    quant.dev_z_lay = gpuarray.to_gpu(quant.z_lay)
                     self.calculate_direct_beamflux(quant)
                 if quant.flux_calc_method == "iteration":
                     self.populate_spectral_flux_iteratively(quant)
