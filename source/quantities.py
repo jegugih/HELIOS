@@ -93,7 +93,7 @@ class Store(object):
         self.adapt_interval = None
         self.smooth = None
         self.geom_zenith_corr = None
-        self.variable_g = np.int32(0)  # 1: g(r) = g * (R_planet / r)^2 instead of constant g
+        self.variable_g = np.int32(1)  # 1: g(r) = g * (R_planet / r)^2. 0: constant g throughout the atmosphere
         self.unbound_warning_given = False
         self.scat_corr = None
         self.input_kappa_value = None

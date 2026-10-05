@@ -106,6 +106,7 @@ asymmetry factor g_0 =                           0                          [num
 diffusivity factor =                             2                          [number between 1 and 2]                                       (CL: Y)
 second Eddington coefficient =                   0.5                        [number]                                                       (CL: Y)
 geometric zenith angle correction =              automatic                  [automatic, yes, no]                                           (CL: Y)
+use fixed gravity =                              no                         [yes, no]                                                      (CL: Y)
 flux calculation method =                        iteration                  [iteration, matrix]                                            (CL: Y)
 on-the-fly --> k coefficients mixing method =    RO                         [correlated-k, RO]                                             (CL: Y)
 energy budget correction =                       automatic                  [automatic, yes, no]                                           (CL: Y)

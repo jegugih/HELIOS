@@ -182,7 +182,7 @@ With 'manual', the system parameters are set manually below. Otherwise, the para
 
    ``surface gravity [cm s^-2]   [number > 0]   (CL: Y)``
 
-This sets the surface gravity value in cgs units. Although called 'surface' gravity, this constant value is used throughout the atmospheric grid. If the entered value < 10, it is assumed that it is the log10 of the gravity, i.e., g = 10^(input value). *This parameter is only used if 'manual' is set for the planet.*
+This sets the surface gravity value in cgs units. It is the gravity at the planetary radius, i.e., at the surface for rocky planets and at the 10 bar level for gas planets. Above and below this level, the gravity scales as (R_planet / r)^2, unless 'use fixed gravity' is set to 'yes', in which case this constant value is used throughout the atmospheric grid. If the entered value < 10, it is assumed that it is the log10 of the gravity, i.e., g = 10^(input value). *This parameter is only used if 'manual' is set for the planet.*
 
    ``orbital distance [AU]   [number > 0]   (CL: Y)``
 
@@ -320,6 +320,10 @@ The second Eddington coefficient (e2) sets the strength of the coupling between 
    ``geometric zenith angle correction   [automatic, yes, no]   (CL: Y)``
 
 If disabled, the zenith angle is assumed to be constant throughout the atmosphere. However, due to the planet's spherical geometry, the angle is in fact dependent on the altitude. The correction is only important for large zenith angles in regions close to the terminator (see Sect. 4.4. in `Malik et al. 2019 <https://ui.adsabs.harvard.edu/abs/2019AJ....157..170M/>`_). Hence, when set to 'automatic' the correction is applied to zenith angles >= 70 deg, but switched off otherwise to keep the computational costs lower.
+
+   ``use fixed gravity   [yes, no]   (CL: Y)``
+
+Per default, the gravity decreases with altitude as g(r) = g (R_planet / r)^2, where g is the 'surface gravity' parameter. This affects the column mass of each layer, and thus its optical depth, as well as the layer heights. Each half layer is treated as isothermal, for which hydrostatic equilibrium has an exact solution. The effect grows with the ratio of the atmospheric extent to the planetary radius, i.e., it is largest for hot, low-gravity atmospheres with a low mean molecular weight, such as hot sub-Neptunes, and minor for rocky planets with heavy atmospheres. If the hydrostatic atmosphere becomes unbound below the TOA pressure, a warning is printed and the radius is capped at 100 R_planet; the TOA pressure should then be increased. Set this to 'yes' to use the constant gravity of earlier HELIOS versions.
 
    ``flux calculation method   [iteration, matrix]   (CL: Y)``
 
