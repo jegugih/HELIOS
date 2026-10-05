@@ -17,6 +17,7 @@ name =                                                0                         
 output directory =                                    ./output/                       [directory path]                             (CL: Y)
 realtime plotting =                                   yes                             [yes, no, number > 0]                        (CL: Y)
 planet type =                                         gas                             [rocky, gas, no_atmosphere]                  (CL: Y)
+  gas --> reference pressure [10^-6 bar] =            1e7                             [number > 0]                                 (CL: Y)
 
 === === GRID === ===
 

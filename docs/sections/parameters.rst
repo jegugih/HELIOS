@@ -44,10 +44,14 @@ If set to 'yes', a pop-up window with the real-time T-P profile is shown during 
 
    ``planet type   [rocky, gas, no_atmosphere]   (CL: Y)``
 
-This setting this determines the zero altitude location. For 'rocky' it is simply the surface of the planet. For 'gas' zero is set at 10 bar. This is really only relevant when using the azimuth angle correction. Because the code in general uses pressure as vertical grid unit. The setting 'no_atmosphere' is special. In this case the code runs a bare-rock scenario with a negligibly thin atmosphere. The surface temperature and the spectrum are then the output quantities of interest. (You will want to use a non-gray surface in that case, otherwise the spectrum will not be that interesting.)
+This setting this determines the zero altitude location. For 'rocky' it is simply the surface of the planet. For 'gas' zero is set at the reference pressure (see below). The zero altitude is where the planetary radius and the surface gravity apply, which matters for the altitude-dependent gravity (see 'use fixed gravity') and the geometric zenith angle correction. The setting 'no_atmosphere' is special. In this case the code runs a bare-rock scenario with a negligibly thin atmosphere. The surface temperature and the spectrum are then the output quantities of interest. (You will want to use a non-gray surface in that case, otherwise the spectrum will not be that interesting.)
 
 Grid
 ----
+
+   ``gas --> reference pressure [10^-6 bar]   [number > 0]   (CL: Y)``
+
+The pressure level at which the planetary radius and the surface gravity are defined for gas planets, in cgs units (default: 1e7, i.e., 10 bar). The zero altitude is placed at the center of the highest layer whose pressure is at least this value, so the reference pressure must not exceed the pressure at the center of the bottom layer. If the planetary radius is a transit radius, set this to the pressure probed in transit (typically ~1e3, i.e., 1 mbar). *This parameter is only used if the planet type is set to 'gas'.*
 
    ``TOA pressure [10^-6 bar]   [number > 0]   (CL: Y)``
 
@@ -182,7 +186,7 @@ With 'manual', the system parameters are set manually below. Otherwise, the para
 
    ``surface gravity [cm s^-2]   [number > 0]   (CL: Y)``
 
-This sets the surface gravity value in cgs units. It is the gravity at the planetary radius, i.e., at the surface for rocky planets and at the 10 bar level for gas planets. Above and below this level, the gravity scales as (R_planet / r)^2, unless 'use fixed gravity' is set to 'yes', in which case this constant value is used throughout the atmospheric grid. If the entered value < 10, it is assumed that it is the log10 of the gravity, i.e., g = 10^(input value). *This parameter is only used if 'manual' is set for the planet.*
+This sets the surface gravity value in cgs units. It is the gravity at the planetary radius, i.e., at the surface for rocky planets and at the reference pressure level for gas planets. Above and below this level, the gravity scales as (R_planet / r)^2, unless 'use fixed gravity' is set to 'yes', in which case this constant value is used throughout the atmospheric grid. If the entered value < 10, it is assumed that it is the log10 of the gravity, i.e., g = 10^(input value). *This parameter is only used if 'manual' is set for the planet.*
 
    ``orbital distance [AU]   [number > 0]   (CL: Y)``
 

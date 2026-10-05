@@ -671,13 +671,27 @@ def calc_F_ratio(quant):
             quant.F_ratio.append(ratio)
 
 
+def reference_layer_index(quant):
+    """ returns the index of the layer whose center is at zero altitude for gas planets,
+    i.e., the highest layer with a center pressure >= the reference pressure """
+
+    candidates = [i for i in range(quant.nlayer) if quant.p_lay[i] >= quant.p_ref]
+
+    if not candidates:
+        print("\nERROR: The reference pressure ({:g} bar) is higher than the pressure at the center of the bottom layer ({:g} bar). "
+              "Increase the BOA pressure or decrease the reference pressure. Aborting...".format(quant.p_ref * 1e-6, quant.p_lay[0] * 1e-6))
+        raise SystemExit()
+
+    return max(candidates)
+
+
 def calculate_height_z(quant):
-    """ calculates the altitude of the layer centers, either above ground or 10 bar pressure level """
+    """ calculates the altitude of the layer centers, either above ground or the reference pressure level """
 
     if quant.planet_type == 'gas':
 
-        # gas planets with pressures of more than 10 bar: white light radius at 10 bar
-        i_white_light_radius = max([i for i in range(quant.nlayer) if quant.p_lay[i] >= 1e7])
+        # gas planets: zero altitude (planetary radius) at the reference pressure
+        i_white_light_radius = reference_layer_index(quant)
 
         quant.z_lay[i_white_light_radius] = 0
 
@@ -701,7 +715,7 @@ def calculate_height_z(quant):
 
 def calculate_heights_and_colmass_variable_g(quant, T_lay, meanmolmass_lay):
     """ calculates layer heights, altitudes and column masses with g(r) = g * (R_planet / r)^2.
-    quant.g is the gravity at R_planet, i.e., at the surface (rocky) or the 10 bar level (gas), as in calculate_height_z.
+    quant.g is the gravity at R_planet, i.e., at the surface (rocky) or the reference pressure level (gas), as in calculate_height_z.
     Each half layer is isothermal, for which hydrostatic equilibrium has the exact solution
     1/r = 1/r_a - k_B T / (mu G M) * ln(p_a / p) """
 
@@ -718,8 +732,7 @@ def calculate_heights_and_colmass_variable_g(quant, T_lay, meanmolmass_lay):
     beta = np.repeat(pc.K_B * T_lay[:nlayer] / (meanmolmass_lay[:nlayer] * GM), 2)
 
     if quant.planet_type == 'gas':
-        i_white_light_radius = max([i for i in range(nlayer) if quant.p_lay[i] >= 1e7])
-        j_ref = 2 * i_white_light_radius + 1
+        j_ref = 2 * reference_layer_index(quant) + 1
     else:
         j_ref = 0
 

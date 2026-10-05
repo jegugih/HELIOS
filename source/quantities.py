@@ -100,6 +100,7 @@ class Store(object):
         self.approx_f = None
         self.tau_lw = 1
         self.planet_type = None
+        self.p_ref = np.float64(1e7)  # gas planets: pressure [10^-6 bar] at which the altitude is zero, R = R_planet and g = surface gravity
         self.F_sens = 0
         self.debug = None
         self.kappa_file_format = np.int32(0)

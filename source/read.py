@@ -225,6 +225,7 @@ class Read(object):
         parser.add_argument('-output_directory', help='see documentation (https://heliosexo.readthedocs.io/en/latest/)', required=False)
         parser.add_argument('-realtime_plotting', help='see documentation (https://heliosexo.readthedocs.io/en/latest/)', required=False)
         parser.add_argument('-planet_type', help='see documentation (https://heliosexo.readthedocs.io/en/latest/)', required=False)
+        parser.add_argument('-reference_pressure', help='see documentation (https://heliosexo.readthedocs.io/en/latest/)', required=False)
 
         # grid
         parser.add_argument('-toa_pressure', help='see documentation (https://heliosexo.readthedocs.io/en/latest/)', required=False)
@@ -351,6 +352,9 @@ class Read(object):
 
                     elif column[0] == "planet" and column[1] == "type":
                         quant.planet_type = column[3]
+
+                    elif column[0] == "gas" and column[2] == "reference" and column[3] == "pressure":
+                        quant.p_ref = npy.float64(column[7])
 
                     # grid
                     elif column[0] == "TOA" and column[1] == "pressure":
@@ -659,6 +663,9 @@ class Read(object):
 
         if args.planet_type:
             quant.planet_type = args.planet_type
+
+        if args.reference_pressure:
+            quant.p_ref = npy.float64(args.reference_pressure)
 
         # grid
         if args.toa_pressure:
